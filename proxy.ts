@@ -17,7 +17,7 @@ const PROTECTED_API_PREFIXES = [
   "/api/admin",
 ];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Only protect specific API routes
