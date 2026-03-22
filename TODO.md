@@ -1,0 +1,1 @@
+- [x] Create .env.example with template vars&#10;- [x] Copy .env.example to .env.local

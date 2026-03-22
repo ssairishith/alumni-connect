@@ -3,11 +3,11 @@
 // No localStorage, no Zustand for auth. Session dies when browser closes.
 
 import useSWR from "swr";
-import type { AuthUser } from "@/lib/types";
+import type { User, Profile } from "@/lib/types";
 
 interface AuthData {
-  user: AuthUser["user"] & { id: string; role: string; status: string };
-  profile: AuthUser["profile"];
+  user: User;
+  profile: Profile;
 }
 
 const fetcher = async (url: string): Promise<AuthData | null> => {

@@ -7,6 +7,7 @@ import { create } from "zustand";
 import type { ChannelId } from "./types";
 
 export type ActivePanel =
+  | { type: "welcome" }
   | { type: "channel"; channel: ChannelId }
   | { type: "alumni-directory" }
   | { type: "mentorship" }
@@ -34,7 +35,7 @@ interface AppStore {
 }
 
 export const useAppStore = create<AppStore>((set) => ({
-  activePanel: { type: "channel", channel: "announcements" },
+  activePanel: { type: "welcome" },
   setActivePanel: (panel) => set({ activePanel: panel }),
 
   isMobileSidebarOpen: false,

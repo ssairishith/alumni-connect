@@ -143,7 +143,7 @@ RETURNS void AS $$
 BEGIN
   DELETE FROM posts
   WHERE deadline IS NOT NULL
-    AND deadline < CURRENT_DATE
+    AND deadline <= CURRENT_DATE
     AND status = 'approved';
 END;
 $$ LANGUAGE plpgsql;

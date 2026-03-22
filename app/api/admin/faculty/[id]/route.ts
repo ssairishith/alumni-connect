@@ -27,6 +27,12 @@ export async function PATCH(
     if (action === "approve") {
       await sql`UPDATE users SET status = 'active' WHERE id = ${id}`;
       await sql`
+        UPDATE profiles
+        SET is_setup_complete = true,
+            full_name = COALESCE(full_name, split_part(${user.email}, '@', 1))
+        WHERE id = ${id}
+      `;
+      await sql`
         INSERT INTO notifications (user_id, type, content)
         VALUES (${id}, 'account_approved', 'Your faculty account has been approved. You can now log in.')
       `;

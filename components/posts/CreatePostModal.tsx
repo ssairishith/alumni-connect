@@ -19,7 +19,7 @@ export default function CreatePostModal({ channel, user, onClose, onCreated }: P
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const isAlumni = user.role === "alumni";
+  const isAlumni = user.role === "alumni" || user.role === "student";
 
   // Which channels can this user post in?
   const postableChannels = CHANNELS.filter((c) => {
@@ -105,7 +105,7 @@ export default function CreatePostModal({ channel, user, onClose, onCreated }: P
                 color: "#fcd34d",
               }}
             >
-              ℹ️ As an alumni, your post will be reviewed by an admin before publishing.
+              ℹ️ Your post will be reviewed by an admin before publishing.
             </div>
           )}
 

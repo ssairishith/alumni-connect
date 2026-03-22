@@ -8,12 +8,28 @@ import AlumniDirectory from "@/components/panels/AlumniDirectory";
 import MentorshipPanel from "@/components/panels/MentorshipPanel";
 import NotificationsPanel from "@/components/panels/NotificationsPanel";
 import AdminPanel from "@/components/panels/AdminPanel";
+import WelcomePanel from "@/components/panels/WelcomePanel";
 
 export default function MainContent({ user, profile }: { user: User; profile: Profile }) {
   const { activePanel, toggleMobileSidebar } = useAppStore();
 
+  const getPanelLabel = () => {
+    switch (activePanel.type) {
+      case "welcome": return "🏠 Welcome";
+      case "channel": return `# ${activePanel.channel}`;
+      case "chat": return "💬 Live Chat";
+      case "alumni-directory": return "🎓 Alumni Directory";
+      case "mentorship": return "🤝 Mentorship";
+      case "notifications": return "🔔 Notifications";
+      case "admin": return "⚙️ Admin Panel";
+      default: return "AU Connect";
+    }
+  };
+
   const renderPanel = () => {
     switch (activePanel.type) {
+      case "welcome":
+        return <WelcomePanel user={user} profile={profile} />;
       case "channel":
         return <PostFeed channel={activePanel.channel} user={user} profile={profile} />;
       case "chat":
@@ -25,56 +41,51 @@ export default function MainContent({ user, profile }: { user: User; profile: Pr
       case "notifications":
         return <NotificationsPanel />;
       case "admin":
-        return user.role === "admin" ? <AdminPanel /> : <Forbidden />;
+        return user.role === "admin" ? <AdminPanel /> : (
+          <div className="empty-state">
+            <span className="icon">🚫</span>
+            <p style={{ fontWeight: 600 }}>Access Denied</p>
+          </div>
+        );
       default:
-        return null;
+        return <WelcomePanel user={user} profile={profile} />;
     }
   };
 
   return (
-    <div style={{ flex: 1, display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
-      {/* Mobile header */}
-      <div
-        style={{
-          display: "none",
-          padding: "12px 16px",
-          borderBottom: "1px solid var(--border)",
-          background: "var(--surface-1)",
-          alignItems: "center",
-          gap: 12,
-        }}
-        className="mobile-header"
-      >
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", overflow: "hidden" }}>
+      {/* Mobile sticky header */}
+      <div className="mobile-header">
         <button
           onClick={toggleMobileSidebar}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "var(--text-primary)", fontSize: 20 }}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: "var(--text-primary)",
+            fontSize: 22,
+            padding: "2px 6px",
+            lineHeight: 1,
+          }}
         >
           ☰
         </button>
-        <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 15 }}>
-          Alumni Chatspace
+        <span style={{
+          fontFamily: "var(--font-display)",
+          fontWeight: 700,
+          fontSize: 15,
+          color: "var(--text-primary)",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}>
+          {getPanelLabel()}
         </span>
       </div>
 
       <div style={{ flex: 1, overflow: "hidden" }}>
         {renderPanel()}
       </div>
-
-      <style>{`
-        @media (max-width: 768px) {
-          .mobile-header { display: flex !important; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
-function Forbidden() {
-  return (
-    <div className="empty-state">
-      <span className="icon">🚫</span>
-      <p style={{ fontWeight: 600 }}>Access Denied</p>
-      <p style={{ fontSize: 13 }}>You don't have permission to view this panel.</p>
     </div>
   );
 }

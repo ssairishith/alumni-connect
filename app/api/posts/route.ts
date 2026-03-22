@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Alumni posts require approval
-    const status = userRole === "alumni" ? "pending" : "approved";
+    const status = ["alumni", "student"].includes(userRole) ? "pending" : "approved";
 
     const [post] = await sql`
       INSERT INTO posts (author_id, channel, title, content, deadline, status)

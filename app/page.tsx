@@ -32,12 +32,25 @@ export default function Home() {
   }
 
   // Profile not set up → setup wizard (skip for admin)
-  if (user.role !== "admin" && profile && !profile.is_setup_complete) {
-    return <ProfileSetup onComplete={mutate} />;
+  if (user.role !== "admin" && user.role !== "faculty" && profile && !profile.is_setup_complete) {
+    return <ProfileSetup onComplete={mutate} onBack={async () => {
+    await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+    mutate();
+    }} />;
   }
 
   // Fully authenticated → main app
-  return <AppLayout user={user} profile={profile!} />;
+  return <AppLayout user={user} profile={profile ?? {
+  id: user.id,
+  full_name: user.email.split("@")[0],
+  bio: null,
+  current_company: null,
+  job_role: null,
+  graduation_year: null,
+  skills: [],
+  avatar_url: null,
+  is_setup_complete: true,
+}} />;
 }
 
 function PendingVerificationScreen({

@@ -9,7 +9,15 @@ const RoleBadge = ({ role }: { role: string }) => (
   <span className={`badge badge-${role}`}>{role}</span>
 );
 
-export default function Sidebar({ user, profile }: { user: User; profile: Profile }) {
+export default function Sidebar({
+  user,
+  profile,
+  onClose,
+}: {
+  user: User;
+  profile: Profile;
+  onClose?: () => void;
+}) {
   const { activePanel, setActivePanel } = useAppStore();
   const { unreadCount } = useNotifications();
 
@@ -18,18 +26,29 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
     window.location.reload();
   };
 
+  const navigate = (panel: Parameters<typeof setActivePanel>[0]) => {
+    setActivePanel(panel);
+    onClose?.();
+  };
+
   const isChannelActive = (ch: string) =>
     activePanel.type === "channel" && activePanel.channel === ch;
 
   const isPanelActive = (type: string) => activePanel.type === type;
 
   const navItems = [
+    { id: "welcome", label: "Welcome", icon: "🏠" },
     ...(user.role === "alumni" || user.role === "student"
       ? [{ id: "alumni-directory", label: "Alumni Directory", icon: "🎓" }]
       : []),
     { id: "mentorship", label: "Mentorship", icon: "🤝" },
     { id: "chat", label: "Live Chat", icon: "💬" },
-    { id: "notifications", label: "Notifications", icon: "🔔", badge: unreadCount },
+    {
+      id: "notifications",
+      label: "Notifications",
+      icon: "🔔",
+      badge: unreadCount,
+    },
     ...(user.role === "admin"
       ? [{ id: "admin", label: "Admin Panel", icon: "⚙️" }]
       : []),
@@ -40,8 +59,9 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
       style={{
         width: 240,
         height: "100vh",
-        background: "var(--surface-1)",
-        borderRight: "1px solid var(--border)",
+        background:
+          "linear-gradient(170deg, #0a1628 0%, #161020 40%, #6b0a0e 100%)",
+        borderRight: "none",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
@@ -51,7 +71,10 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
       <div
         style={{
           padding: "16px 14px 12px",
-          borderBottom: "1px solid var(--border)",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -77,51 +100,64 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
                 fontFamily: "var(--font-display)",
                 fontWeight: 800,
                 fontSize: 14,
-                color: "var(--text-primary)",
+                color: "#ffffff",
                 letterSpacing: "-0.01em",
               }}
             >
-              Alumni Chatspace
+              AU Connect
             </div>
-            <div style={{ fontSize: 11, color: "var(--text-muted)" }}>
-              Community Platform
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>
+              Anurag University
             </div>
           </div>
         </div>
+
+        {/* Mobile close button */}
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              background: "rgba(255,255,255,0.1)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              color: "#fff",
+              fontSize: 16,
+              cursor: "pointer",
+              padding: "4px 9px",
+              borderRadius: 6,
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
+        )}
       </div>
 
       {/* Scrollable nav */}
       <div style={{ flex: 1, overflow: "auto", padding: "10px 8px" }}>
-        {/* Channels */}
         <SectionHeader>Channels</SectionHeader>
-        {CHANNELS.map((ch) => {
-          // Check channel permissions
-          if (ch.id === "announcements" && !["admin", "faculty"].includes(user.role)) {
-            // Students/alumni can VIEW announcements
-          }
-          return (
-            <button
-              key={ch.id}
-              className={`channel-item ${isChannelActive(ch.id) ? "active" : ""}`}
-              style={{ width: "100%", textAlign: "left", border: "none" }}
-              onClick={() => setActivePanel({ type: "channel", channel: ch.id })}
-            >
-              <span style={{ fontSize: 15 }}>{ch.icon}</span>
-              <span style={{ flex: 1, fontSize: 13 }}># {ch.label}</span>
-            </button>
-          );
-        })}
+        {CHANNELS.map((ch) => (
+          <button
+            key={ch.id}
+            className={`channel-item ${isChannelActive(ch.id) ? "active" : ""}`}
+            style={{ width: "100%", textAlign: "left", border: "none" }}
+            onClick={() =>
+              navigate({ type: "channel", channel: ch.id })
+            }
+          >
+            <span style={{ fontSize: 15 }}>{ch.icon}</span>
+            <span style={{ flex: 1, fontSize: 13 }}># {ch.label}</span>
+          </button>
+        ))}
 
-        <div className="divider" />
+        <div className="divider" style={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
-        {/* Feature panels */}
         <SectionHeader>Features</SectionHeader>
         {navItems.map((item) => (
           <button
             key={item.id}
             className={`channel-item ${isPanelActive(item.id) ? "active" : ""}`}
             style={{ width: "100%", textAlign: "left", border: "none" }}
-            onClick={() => setActivePanel({ type: item.id as never })}
+            onClick={() => navigate({ type: item.id as never })}
           >
             <span style={{ fontSize: 15 }}>{item.icon}</span>
             <span style={{ flex: 1, fontSize: 13 }}>{item.label}</span>
@@ -149,10 +185,11 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
       <div
         style={{
           padding: "10px 12px",
-          borderTop: "1px solid var(--border)",
+          borderTop: "1px solid rgba(255,255,255,0.08)",
           display: "flex",
           alignItems: "center",
           gap: 10,
+          background: "rgba(0,0,0,0.2)",
         }}
       >
         <div
@@ -167,6 +204,8 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
             justifyContent: "center",
             fontSize: 15,
             flexShrink: 0,
+            color: "#fca5a5",
+            fontWeight: 700,
           }}
         >
           {profile.full_name?.[0]?.toUpperCase() ?? "?"}
@@ -176,7 +215,7 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
             style={{
               fontSize: 13,
               fontWeight: 600,
-              color: "var(--text-primary)",
+              color: "#ffffff",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -188,21 +227,32 @@ export default function Sidebar({ user, profile }: { user: User; profile: Profil
         </div>
         <button
           onClick={handleLogout}
-          title="Sign out"
           style={{
-            background: "none",
-            border: "none",
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
             cursor: "pointer",
-            color: "var(--text-muted)",
-            fontSize: 16,
-            padding: 4,
+            color: "rgba(255,255,255,0.75)",
+            fontSize: 11,
+            fontWeight: 600,
+            padding: "4px 10px",
             borderRadius: 6,
-            transition: "color 0.15s",
+            transition: "all 0.15s",
+            fontFamily: "var(--font-body)",
+            letterSpacing: "0.03em",
+            whiteSpace: "nowrap",
           }}
-          onMouseEnter={(e) => ((e.target as HTMLElement).style.color = "#f87171")}
-          onMouseLeave={(e) => ((e.target as HTMLElement).style.color = "var(--text-muted)")}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.3)";
+            (e.currentTarget as HTMLElement).style.color = "#ffffff";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(220,38,38,0.5)";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
+            (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.75)";
+            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
+          }}
         >
-          ⬡
+          Sign Out
         </button>
       </div>
     </aside>
@@ -215,7 +265,7 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
       style={{
         fontSize: 10,
         fontWeight: 700,
-        color: "var(--text-muted)",
+        color: "rgba(255,255,255,0.35)",
         letterSpacing: "0.08em",
         textTransform: "uppercase",
         padding: "6px 8px 4px",

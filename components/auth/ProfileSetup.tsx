@@ -3,8 +3,7 @@
 import { useState, useRef } from "react";
 import type { ParsedResume } from "@/lib/types";
 
-export default function ProfileSetup({ onComplete }: { onComplete: () => void }) {
-  const [step, setStep] = useState<"upload" | "form">("upload");
+export default function ProfileSetup({ onComplete, onBack }: { onComplete: () => void; onBack?: () => void }) {  const [step, setStep] = useState<"upload" | "form">("upload");
   const [parsing, setParsing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [parseError, setParseError] = useState("");
@@ -72,7 +71,10 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
-    if (file?.type === "application/pdf") handleFileUpload(file);
+    const allowed = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"];
+    if (file && (allowed.includes(file.type) || file.name.endsWith(".pdf") || file.name.endsWith(".docx"))) {
+      handleFileUpload(file);
+}
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -158,11 +160,11 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
               <p style={{ color: "var(--text-primary)", fontWeight: 600, marginBottom: 4 }}>
                 Drop your resume here
               </p>
-              <p style={{ color: "var(--text-muted)", fontSize: 13 }}>PDF files only · AI will auto-fill your profile</p>
+              <p style={{ color: "var(--text-muted)", fontSize: 13 }}>PDF or DOCX · AI will auto-fill your profile</p>
               <input
                 ref={fileRef}
                 type="file"
-                accept="application/pdf"
+                accept="application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 style={{ display: "none" }}
                 onChange={(e) => {
                   const f = e.target.files?.[0];
@@ -183,9 +185,16 @@ export default function ProfileSetup({ onComplete }: { onComplete: () => void })
               <div className="divider" style={{ flex: 1, margin: 0 }} />
             </div>
 
-            <button className="btn btn-ghost" style={{ width: "100%", padding: "10px 0" }} onClick={() => setStep("form")}>
-              Fill out manually
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <button className="btn btn-ghost" style={{ width: "100%", padding: "10px 0" }} onClick={() => setStep("form")}>
+                Fill out manually
+              </button>
+              {onBack && (
+                <button className="btn btn-ghost" style={{ width: "100%", padding: "8px 0", fontSize: 13, opacity: 0.7 }} onClick={onBack}>
+                  ← Back to Sign In
+                </button>
+              )}
+            </div>
           </div>
         )}
 

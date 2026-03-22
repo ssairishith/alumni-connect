@@ -10,7 +10,6 @@ export const CHANNELS = [
   { id: "announcements", label: "Announcements", icon: "📢" },
   { id: "internships", label: "Internships", icon: "💼" },
   { id: "hackathons", label: "Hackathons", icon: "⚡" },
-  { id: "general-chat", label: "General Chat", icon: "💬" },
 ] as const;
 
 export type ChannelId = (typeof CHANNELS)[number]["id"];

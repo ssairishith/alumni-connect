@@ -1,4 +1,3 @@
-// app/api/resume/parse/route.ts
 export const runtime = "nodejs";
 
 import { getSession, unauthorized, badRequest, serverError, ok } from "@/lib/auth";
@@ -13,24 +12,43 @@ export async function POST(request: Request) {
     const file = formData.get("resume") as File | null;
     if (!file) return badRequest("No file uploaded");
 
-    // Extract text from PDF
+    const fileName = file.name.toLowerCase();
+    const isPdf = fileName.endsWith(".pdf") || file.type === "application/pdf";
+    const isDocx = fileName.endsWith(".docx") || file.type.includes("wordprocessingml");
+
+    if (!isPdf && !isDocx) {
+      return badRequest("Only PDF and DOCX files are supported.");
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-
     let rawText = "";
-    try {
-      const pdfParse = (await import("pdf-parse")).default;
-      const parsed = await pdfParse(buffer);
-      rawText = parsed.text;
-    } catch {
-      return badRequest("Could not read PDF. Please try a different file.");
+
+    if (isPdf) {
+      // Extract text from PDF using pdf-parse
+      try {
+        const pdfParse = (await import("pdf-parse")).default;
+        const parsed = await pdfParse(buffer);
+        rawText = parsed.text;
+      } catch {
+        return badRequest("Could not read PDF. Try a different file or fill manually.");
+      }
+    } else if (isDocx) {
+      // Extract text from DOCX using mammoth
+      try {
+        const mammoth = (await import("mammoth")).default ?? (await import("mammoth"));
+        const result = await mammoth.extractRawText({ buffer });
+        rawText = result.value;
+      } catch {
+        return badRequest("Could not read DOCX. Try a different file or fill manually.");
+      }
     }
 
-    if (!rawText || rawText.length < 50) {
-      return badRequest("The PDF appears to be empty or unreadable.");
+    if (!rawText || rawText.trim().length < 30) {
+      return badRequest("The file appears to be empty or unreadable. Please fill manually.");
     }
 
-    // Trim to reasonable length to avoid token overflow
+    // Trim to avoid token overflow
     const trimmedText = rawText.slice(0, 6000);
 
     if (!process.env.GROQ_API_KEY) {
@@ -66,27 +84,19 @@ ${trimmedText}`,
     });
 
     const content = completion.choices[0]?.message?.content ?? "";
-
-    // Strip any accidental markdown fences
-    const cleaned = content
-      .replace(/```json/gi, "")
-      .replace(/```/g, "")
-      .trim();
+    const cleaned = content.replace(/```json/gi, "").replace(/```/g, "").trim();
 
     let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(cleaned);
     } catch {
-      console.error("Groq returned non-JSON:", content);
       return serverError("AI could not parse the resume. Please fill details manually.");
     }
 
     return ok({
       full_name: parsed.full_name ?? null,
       bio: parsed.bio ?? null,
-      graduation_year: parsed.graduation_year
-        ? Number(parsed.graduation_year)
-        : null,
+      graduation_year: parsed.graduation_year ? Number(parsed.graduation_year) : null,
       current_company: parsed.current_company ?? null,
       job_role: parsed.job_role ?? null,
       skills: Array.isArray(parsed.skills) ? parsed.skills.slice(0, 15) : [],

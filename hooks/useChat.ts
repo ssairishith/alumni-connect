@@ -1,7 +1,3 @@
-// hooks/useChat.ts
-// Real-time via polling every 2s after last message timestamp.
-// FIX for "users not connected" issue.
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { ChatMessage } from "@/lib/types";
 
@@ -10,7 +6,16 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   const lastTimestampRef = useRef<string | null>(null);
+  const seenIdsRef = useRef<Set<string>>(new Set());
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const addMessages = (newMsgs: ChatMessage[]) => {
+    const unseen = newMsgs.filter((m) => !seenIdsRef.current.has(m.id));
+    if (unseen.length === 0) return;
+    unseen.forEach((m) => seenIdsRef.current.add(m.id));
+    setMessages((prev) => [...prev, ...unseen]);
+    lastTimestampRef.current = unseen[unseen.length - 1].created_at;
+  };
 
   // Load initial messages
   useEffect(() => {
@@ -19,6 +24,7 @@ export function useChat() {
         const res = await fetch("/api/chat/messages", { credentials: "include" });
         const json = await res.json();
         const msgs: ChatMessage[] = json.data ?? [];
+        msgs.forEach((m) => seenIdsRef.current.add(m.id));
         setMessages(msgs);
         if (msgs.length > 0) {
           lastTimestampRef.current = msgs[msgs.length - 1].created_at;
@@ -41,10 +47,7 @@ export function useChat() {
         );
         const json = await res.json();
         const newMsgs: ChatMessage[] = json.data ?? [];
-        if (newMsgs.length > 0) {
-          setMessages((prev) => [...prev, ...newMsgs]);
-          lastTimestampRef.current = newMsgs[newMsgs.length - 1].created_at;
-        }
+        if (newMsgs.length > 0) addMessages(newMsgs);
       } catch {
         // Silently ignore network errors during polling
       }
@@ -67,9 +70,9 @@ export function useChat() {
         body: JSON.stringify({ content }),
       });
       const json = await res.json();
+      // Add via addMessages so seenIdsRef is updated — prevents poll from adding it again
       if (json.success && json.data) {
-        setMessages((prev) => [...prev, json.data]);
-        lastTimestampRef.current = json.data.created_at;
+        addMessages([json.data]);
       }
     } finally {
       setIsSending(false);
