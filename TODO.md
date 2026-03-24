@@ -1,1 +1,1 @@
-- [x] Create .env.example with template vars&#10;- [x] Copy .env.example to .env.local
+- [x] Reload VSCode window (Ctrl+Shift+P > Reload Window) to verify warning is gone

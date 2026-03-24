@@ -30,6 +30,23 @@ export async function PATCH(
       UPDATE mentorship_requests SET status = ${status} WHERE id = ${id}
     `;
 
+    if (status === "accepted") {
+      // ensure direct conversation exists after accept
+      const [conversation] = await sql`
+        SELECT id FROM direct_conversations
+        WHERE (initiator_id = ${req.student_id} AND recipient_id = ${req.alumni_id})
+           OR (initiator_id = ${req.alumni_id} AND recipient_id = ${req.student_id})
+        LIMIT 1
+      `;
+
+      if (!conversation) {
+        await sql`
+          INSERT INTO direct_conversations (initiator_id, recipient_id)
+          VALUES (${req.student_id}, ${req.alumni_id})
+        `;
+      }
+    }
+
     // Notify student
     const [alumniProfile] = await sql`SELECT full_name FROM profiles WHERE id = ${userId}`;
     await sql`

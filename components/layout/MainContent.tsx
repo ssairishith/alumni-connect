@@ -9,6 +9,8 @@ import MentorshipPanel from "@/components/panels/MentorshipPanel";
 import NotificationsPanel from "@/components/panels/NotificationsPanel";
 import AdminPanel from "@/components/panels/AdminPanel";
 import WelcomePanel from "@/components/panels/WelcomePanel";
+import ProfilePanel from "@/components/profile/ProfilePanel";
+import DirectChatPanel from "@/components/chat/DirectChatPanel";
 
 export default function MainContent({ user, profile }: { user: User; profile: Profile }) {
   const { activePanel, toggleMobileSidebar } = useAppStore();
@@ -22,6 +24,8 @@ export default function MainContent({ user, profile }: { user: User; profile: Pr
       case "mentorship": return "🤝 Mentorship";
       case "notifications": return "🔔 Notifications";
       case "admin": return "⚙️ Admin Panel";
+      case "profile": return "🧑 Profile";
+      case "direct-chat": return `💬 Chat with ${activePanel.peerName}`;
       default: return "AU Connect";
     }
   };
@@ -46,6 +50,18 @@ export default function MainContent({ user, profile }: { user: User; profile: Pr
             <span className="icon">🚫</span>
             <p style={{ fontWeight: 600 }}>Access Denied</p>
           </div>
+        );
+      case "profile":
+        return <ProfilePanel user={user} profile={profile} targetUserId={activePanel.userId} />;
+      case "direct-chat":
+        return (
+          <DirectChatPanel
+            user={user}
+            profile={profile}
+            conversationId={activePanel.conversationId}
+            peerId={activePanel.peerId}
+            peerName={activePanel.peerName}
+          />
         );
       default:
         return <WelcomePanel user={user} profile={profile} />;

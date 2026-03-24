@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { formatDistanceToNow } from "date-fns";
+import { useAppStore } from "@/lib/store";
 import type { User, MentorshipRequest } from "@/lib/types";
 
 const fetcher = (url: string) =>
@@ -106,6 +107,8 @@ function RequestCard({
     rejected: { bg: "rgba(220,38,38,0.08)", border: "rgba(220,38,38,0.2)", color: "#f87171", label: "Rejected" },
   }[request.status];
 
+  const { setActivePanel } = useAppStore();
+
   return (
     <div
       className="card animate-fade-in"
@@ -160,6 +163,42 @@ function RequestCard({
           &ldquo;{request.message}&rdquo;
         </p>
       )}
+
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+        <button
+          className="btn btn-ghost"
+          onClick={() => setActivePanel({ type: "profile", userId: isAlumni ? request.student_id : request.alumni_id })}
+          style={{ fontSize: 12, minWidth: 110 }}
+        >
+          View Profile
+        </button>
+        {request.status === "accepted" && (
+          <button
+            className="btn btn-primary"
+            onClick={async () => {
+              const other = isAlumni ? request.student_id : request.alumni_id;
+              const res = await fetch("/api/direct-conversations", {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ other_user_id: other }),
+              });
+              const json = await res.json();
+              if (json.success && json.data?.conversationId) {
+                setActivePanel({
+                  type: "direct-chat",
+                  conversationId: json.data.conversationId,
+                  peerId: other,
+                  peerName: isAlumni ? request.student_name : request.alumni_name,
+                });
+              }
+            }}
+            style={{ fontSize: 12, minWidth: 130 }}
+          >
+            Open Chat
+          </button>
+        )}
+      </div>
 
       {isAlumni && request.status === "pending" && (
         <div style={{ display: "flex", gap: 8 }}>

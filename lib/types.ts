@@ -97,6 +97,23 @@ export interface Notification {
   created_at: string;
 }
 
+export interface DirectConversation {
+  id: string;
+  initiator_id: string;
+  recipient_id: string;
+  created_at: string;
+}
+
+export interface DirectMessage {
+  id: string;
+  conversation_id?: string;
+  sender_id: string;
+  sender_name: string | null;
+  sender_role: string;
+  content: string;
+  created_at: string;
+}
+
 export interface AuditLog {
   id: string;
   admin_id: string;
@@ -133,4 +150,38 @@ export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;
+}
+
+export interface OverviewTotals {
+  students: number;
+  alumni: number;
+  faculty: number;
+  admins: number;
+  activeUsers: number;
+  pendingFaculty: number;
+  totalPosts: number;
+  pendingPosts: number;
+}
+
+export interface OverviewWeeklyData {
+  day: string;
+  count: number;
+}
+
+export interface OverviewActiveUser {
+  id: string;
+  email: string;
+  role: UserRole;
+  full_name: string | null;
+  activity_score: number;
+}
+
+export interface OverviewResponse {
+  totals: OverviewTotals;
+  weeklyActivity: {
+    posts: OverviewWeeklyData[];
+    chat: OverviewWeeklyData[];
+    mentorship: OverviewWeeklyData[];
+  };
+  activeUsers: OverviewActiveUser[];
 }

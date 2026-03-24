@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import type { Post, User, Comment } from "@/lib/types";
+import { useAppStore } from "@/lib/store";
 
 interface Props {
   post: Post;
@@ -20,6 +21,7 @@ export default function PostCard({ post, user, onMutate, showAdminActions }: Pro
   const [reactLoading, setReactLoading] = useState(false);
   const [localPost, setLocalPost] = useState(post);
 
+  const { setActivePanel } = useAppStore();
   const isExpired = post.deadline && new Date(post.deadline) < new Date();
   const isPending = post.status === "pending";
 
@@ -144,7 +146,16 @@ export default function PostCard({ post, user, onMutate, showAdminActions }: Pro
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontWeight: 600, fontSize: 14, color: "var(--text-primary)" }}>
+              <span
+                onClick={() => setActivePanel({ type: "profile", userId: post.author_id })}
+                style={{
+                  fontWeight: 600,
+                  fontSize: 14,
+                  color: "var(--text-primary)",
+                  textDecoration: "underline",
+                  cursor: "pointer",
+                }}
+              >
                 {post.author_name ?? "Unknown"}
               </span>
               <span className={`badge badge-${post.author_role}`}>{post.author_role}</span>

@@ -13,7 +13,9 @@ export type ActivePanel =
   | { type: "mentorship" }
   | { type: "notifications" }
   | { type: "admin" }
-  | { type: "chat" };
+  | { type: "chat" }
+  | { type: "profile"; userId?: string }
+  | { type: "direct-chat"; conversationId: string; peerId: string; peerName: string };
 
 interface AppStore {
   // Navigation

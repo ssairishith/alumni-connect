@@ -135,6 +135,28 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- ==========================================
+-- DIRECT CONVERSATIONS TABLE
+-- ==========================================
+CREATE TABLE IF NOT EXISTS direct_conversations (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  initiator_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  recipient_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE (LEAST(initiator_id, recipient_id), GREATEST(initiator_id, recipient_id))
+);
+
+-- ==========================================
+-- DIRECT MESSAGES TABLE
+-- ==========================================
+CREATE TABLE IF NOT EXISTS direct_messages (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL REFERENCES direct_conversations(id) ON DELETE CASCADE,
+  sender_id       UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  content         TEXT NOT NULL,
+  created_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ==========================================
 -- AUTO-DELETE EXPIRED POSTS FUNCTION
 -- (Optional: run as cron or check on fetch)
 -- ==========================================

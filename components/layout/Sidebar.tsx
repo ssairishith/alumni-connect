@@ -184,76 +184,96 @@ export default function Sidebar({
       {/* User footer */}
       <div
         style={{
-          padding: "10px 12px",
+          minHeight: 140,
+          padding: "14px 12px",
           borderTop: "1px solid rgba(255,255,255,0.08)",
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
           gap: 10,
           background: "rgba(0,0,0,0.2)",
+          justifyContent: "center",
         }}
       >
-        <div
-          style={{
-            width: 34,
-            height: 34,
-            borderRadius: "50%",
-            background: "var(--primary-dim)",
-            border: "1px solid var(--border-active)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 15,
-            flexShrink: 0,
-            color: "#fca5a5",
-            fontWeight: 700,
-          }}
-        >
-          {profile.full_name?.[0]?.toUpperCase() ?? "?"}
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#ffffff",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              width: 34,
+              height: 34,
+              borderRadius: "50%",
+              background: "var(--primary-dim)",
+              border: "1px solid var(--border-active)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 15,
+              flexShrink: 0,
+              color: "#fca5a5",
+              fontWeight: 700,
+            }}
+          >
+            {profile.full_name?.[0]?.toUpperCase() ?? "?"}
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#ffffff",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {profile.full_name ?? user.email}
+            </div>
+            <RoleBadge role={user.role} />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => navigate({ type: "profile" })}
+            style={{
+              flex: 1,
+              minHeight: 34,
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              cursor: "pointer",
+              color: "rgba(255,255,255,0.9)",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "6px 10px",
+              borderRadius: 6,
+              transition: "all 0.15s",
+              fontFamily: "var(--font-body)",
+              letterSpacing: "0.03em",
               whiteSpace: "nowrap",
             }}
           >
-            {profile.full_name ?? user.email}
-          </div>
-          <RoleBadge role={user.role} />
+            Profile
+          </button>
+          <button
+            onClick={handleLogout}
+            style={{
+              flex: 1,
+              minHeight: 34,
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              cursor: "pointer",
+              color: "rgba(255,255,255,0.9)",
+              fontSize: 12,
+              fontWeight: 700,
+              padding: "6px 10px",
+              borderRadius: 6,
+              transition: "all 0.15s",
+              fontFamily: "var(--font-body)",
+              letterSpacing: "0.03em",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Sign Out
+          </button>
         </div>
-        <button
-          onClick={handleLogout}
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.15)",
-            cursor: "pointer",
-            color: "rgba(255,255,255,0.75)",
-            fontSize: 11,
-            fontWeight: 600,
-            padding: "4px 10px",
-            borderRadius: 6,
-            transition: "all 0.15s",
-            fontFamily: "var(--font-body)",
-            letterSpacing: "0.03em",
-            whiteSpace: "nowrap",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(220,38,38,0.3)";
-            (e.currentTarget as HTMLElement).style.color = "#ffffff";
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(220,38,38,0.5)";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.08)";
-            (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.75)";
-            (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.15)";
-          }}
-        >
-          Sign Out
-        </button>
       </div>
     </aside>
   );

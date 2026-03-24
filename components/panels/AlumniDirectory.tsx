@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import useSWR from "swr";
+import { useAppStore } from "@/lib/store";
 import type { User, AlumniProfile, MentorshipStatus } from "@/lib/types";
 
 const fetcher = (url: string) =>
@@ -61,6 +62,8 @@ export default function AlumniDirectory({ user }: { user: User }) {
     if (status === "rejected") return { bg: "rgba(220,38,38,0.1)", color: "#f87171", text: "Rejected" };
     return null;
   };
+
+  const { setActivePanel } = useAppStore();
 
   return (
     <div style={{ height: "100%", display: "flex", flexDirection: "column" }}>
@@ -213,6 +216,42 @@ export default function AlumniDirectory({ user }: { user: User }) {
             </div>
 
             <div style={{ padding: 24, display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button
+                  className="btn btn-ghost"
+                  onClick={() => {
+                    setSelected(null);
+                    setActivePanel({ type: "profile", userId: selected.id });
+                  }}
+                  style={{ fontSize: 12 }}
+                >
+                  View Profile
+                </button>
+                <button
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    setSelected(null);
+                    const res = await fetch("/api/direct-conversations", {
+                      method: "POST",
+                      credentials: "include",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ other_user_id: selected.id }),
+                    });
+                    const json = await res.json();
+                    if (json.success && json.data?.conversationId) {
+                      setActivePanel({
+                        type: "direct-chat",
+                        conversationId: json.data.conversationId,
+                        peerId: selected.id,
+                        peerName: selected.full_name || selected.id,
+                      });
+                    }
+                  }}
+                  style={{ fontSize: 12 }}
+                >
+                  Open Chat
+                </button>
+              </div>
               {/* Info */}
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {selected.current_company && (
